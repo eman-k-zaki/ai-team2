@@ -7,10 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1lD--_W4X6BsLYAVTcmdVoc9N_OEITxd7
 """
 
-# ============================================
-# STEP 1: Install required libraries
-# ============================================
-!pip install transformers sentencepiece gradio -q
 
 
 # ============================================
