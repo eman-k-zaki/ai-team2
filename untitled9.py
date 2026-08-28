@@ -54,36 +54,45 @@ def translate(text_block):
 # ============================================
 st.set_page_config(page_title="Arabic to English Translator", page_icon="🌍", layout="centered")
  
-st.title("🌍 Arabic to English Batch Translator")
-st.caption("Translate multiple Arabic sentences at once — one sentence per line.")
+st.title("🌍 Arabic to English Translator")
+st.caption("Type a sentence and press Enter to translate it instantly.")
  
 st.divider()
  
-# Using a form lets the user submit with Ctrl+Enter while typing (not just by clicking)
-with st.form(key="translate_form"):
-    user_input = st.text_area(
-        "Arabic Text",
-        height=200,
-        placeholder="اكتب كل جملة في سطر منفصل...\nمثال:\nمرحبا كيف حالك\nانا بحب البرمجة",
-        help="Press Ctrl + Enter to translate instantly, or click the button below."
+# Keep a running history of translations across Enter presses
+if "history" not in st.session_state:
+    st.session_state.history = []  # list of (arabic, english) tuples
+ 
+# text_input inside a form submits automatically when the user presses Enter
+with st.form(key="translate_form", clear_on_submit=True):
+    user_input = st.text_input(
+        "Arabic sentence",
+        placeholder="اكتب جملة واحدة وادوس Enter...",
+        help="Press Enter to translate."
     )
- 
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        submitted = st.form_submit_button("🔁 Translate", use_container_width=True)
-    with col2:
-        clear = st.form_submit_button("🗑️ Clear", use_container_width=True)
- 
-if clear:
-    st.rerun()
+    submitted = st.form_submit_button("🔁 Translate", use_container_width=True)
  
 if submitted:
     if user_input.strip() == "":
-        st.warning("⚠️ Please enter at least one sentence.")
+        st.warning("⚠️ Please enter a sentence.")
     else:
-        num_sentences = len([line for line in user_input.split("\n") if line.strip() != ""])
-        with st.spinner(f"Translating {num_sentences} sentence(s)..."):
-            output = translate(user_input)
-        st.success("Done!")
-        st.text_area("✅ English Translations", value=output, height=200)
+        with st.spinner("Translating..."):
+            english = translate(user_input).split("  ->  ", 1)[-1]
+        st.session_state.history.insert(0, (user_input, english))
+ 
+# Show translation history (most recent first)
+if st.session_state.history:
+    st.divider()
+    col_a, col_b = st.columns([5, 1])
+    with col_a:
+        st.subheader("Translations")
+    with col_b:
+        if st.button("🗑️ Clear", use_container_width=True):
+            st.session_state.history = []
+            st.rerun()
+ 
+    for arabic, english in st.session_state.history:
+        st.markdown(f"**AR:** {arabic}")
+        st.markdown(f"**EN:** {english}")
+        st.divider()
  
