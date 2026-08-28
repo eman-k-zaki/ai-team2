@@ -52,21 +52,38 @@ def translate(text_block):
 # ============================================
 # STEP 3: Streamlit UI
 # ============================================
-st.set_page_config(page_title="Arabic to English Translator", page_icon="🌍")
-
+st.set_page_config(page_title="Arabic to English Translator", page_icon="🌍", layout="centered")
+ 
 st.title("🌍 Arabic to English Batch Translator")
-st.write("Translate multiple Arabic sentences at once. Put each sentence on its own line.")
-
-user_input = st.text_area(
-    "Arabic Text (one sentence per line)",
-    height=200,
-    placeholder="اكتب كل جملة في سطر منفصل...\nمثال:\nمرحبا كيف حالك\nانا بحب البرمجة"
-)
-
-if st.button("Translate"):
+st.caption("Translate multiple Arabic sentences at once — one sentence per line.")
+ 
+st.divider()
+ 
+# Using a form lets the user submit with Ctrl+Enter while typing (not just by clicking)
+with st.form(key="translate_form"):
+    user_input = st.text_area(
+        "Arabic Text",
+        height=200,
+        placeholder="اكتب كل جملة في سطر منفصل...\nمثال:\nمرحبا كيف حالك\nانا بحب البرمجة",
+        help="Press Ctrl + Enter to translate instantly, or click the button below."
+    )
+ 
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        submitted = st.form_submit_button("🔁 Translate", use_container_width=True)
+    with col2:
+        clear = st.form_submit_button("🗑️ Clear", use_container_width=True)
+ 
+if clear:
+    st.rerun()
+ 
+if submitted:
     if user_input.strip() == "":
-        st.warning("Please enter at least one sentence.")
+        st.warning("⚠️ Please enter at least one sentence.")
     else:
-        with st.spinner("Translating..."):
+        num_sentences = len([line for line in user_input.split("\n") if line.strip() != ""])
+        with st.spinner(f"Translating {num_sentences} sentence(s)..."):
             output = translate(user_input)
-        st.text_area("English Translations", value=output, height=200)
+        st.success("Done!")
+        st.text_area("✅ English Translations", value=output, height=200)
+ 
